@@ -15,12 +15,15 @@ class Algorithm:
                     # if it is first in row or has a black rectangle behind it, adds new horizontal word
                     if (counter % len(tile_row) == 0) or (j != 0 and tile_row[j - 1]):
                         helper = str(counter) + "h"
-                        words_count.append([[i, j], helper, 1])
+                        if helper == "0h":
+                            words_count.append([[i, j], helper, 1, [["0v", 0]]])
+                        else:
+                            words_count.append([[i, j], helper, 1, []])
 
                     # if it is first in column or has a black rectangle above it adds new vertical word
                     if (i == 0) or (i != 0 and tiles[i - 1][j]):
                         helper = str(counter) + "v"
-                        words_count.append([[i, j], helper, 1])
+                        words_count.append([[i, j], helper, 1, []])
 
                     # add to size of the adequate word
                     for words in words_count:
@@ -34,6 +37,7 @@ class Algorithm:
                                     break
 
                             if should_add:
+                                words[3].append([helper, words[2]])
                                 words[2] += 1
 
                         should_add = True
@@ -45,6 +49,7 @@ class Algorithm:
                                     break
 
                             if should_add:
+                                words[3].append([helper, words[2]])
                                 words[2] += 1
 
                 j += 1
@@ -72,12 +77,6 @@ class ExampleAlgorithm(Algorithm):
         for move in moves_list:
             solution.append([move[0], move[1], domains])
 
-        # print(tiles)
-        # print(variables)
-        # print(words)
-        # pprint.pprint(domains)
-        # pprint.pprint(solution)
-
         return solution
 
 
@@ -87,16 +86,49 @@ class Backtracking(Algorithm):
 
         domains = {var: [word for word in words] for var in variables}
 
-        # sta je cilj, ja prvo moram da napravim koliko polja mora da popuni neka rec u kom smeru
-        # posle kada to uradim treba da isprobavam
-
         solution = []
-        words_count = self.get_words_count(self, tiles, variables, words)
+        # all words
+        words_count = Algorithm.get_words_count(self, tiles, variables, words)
+        # words that already have value
+        words_taken = [False for word in words_count]
+        # what words are dependent or connected
+        words_connected = [word[3] for word in words_count]
+        # what words were used
+        words_used = []
+        # what words are good
+        words_good = []
 
         while(True):
 
-            for word in words:
-                word = 1
+            i = 0
+            for i in range(0, len(words_taken)):
+                # it doesn't have a word
+                if not words_taken[i]:
+                    # cycle through all words
+                    for word in words:
+                        if len(word) == words_count[i][2]:
+
+                            flag = True
+                            for j in range(0, i):
+                                for connection in words_connected[j]:
+
+                                    # if connection[0] == words_count[i][1] and words_good[j][connection[1]] :
+
+
+
+
+                                pass
+
+                            if flag:
+                                words_used.append([words_count[i][1], word])
+                                words_good.append([words_count[i][1], word])
+                                words_taken[i] = True
+                                break
+
+
+            # last element has taken its word, break cycle
+            if words_taken[len(words_taken) - 1]:
+                break
 
 
         return solution
