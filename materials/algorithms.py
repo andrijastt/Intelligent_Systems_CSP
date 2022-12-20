@@ -16,7 +16,7 @@ class Algorithm:
                     if (counter % len(tile_row) == 0) or (j != 0 and tile_row[j - 1]):
                         helper = str(counter) + "h"
                         if helper == "0h":
-                            words_count.append([[i, j], helper, 1, [["0v", 0]]])
+                            words_count.append([[i, j], helper, 1, [["0v", 0, 0]]])
                         else:
                             words_count.append([[i, j], helper, 1, []])
 
@@ -109,15 +109,15 @@ class Backtracking(Algorithm):
                         if len(word) == words_count[i][2]:
 
                             flag = True
-                            for j in range(0, i):
-                                for connection in words_connected[j]:
-
-                                    # if connection[0] == words_count[i][1] and words_good[j][connection[1]] :
-
-
-
-
-                                pass
+                            # for j in range(0, i):
+                            #     for connection in words_connected[j]:
+                            #
+                            #         # if connection[0] == words_count[i][1] and words_good[j][connection[1]] :
+                            #
+                            #
+                            #
+                            #
+                            #     pass
 
                             if flag:
                                 words_used.append([words_count[i][1], word])
