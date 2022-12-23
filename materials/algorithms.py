@@ -5,58 +5,30 @@ class Algorithm:
     # gets what words and what their size is and if they are horizontal or vertical
     def get_words_count(self, tiles, variables, words):
         words_count = []
-        counter = 0
-        i = 0
-        for tile_row in tiles:
-            j = 0
-            for tile in tile_row:
-                if not tile:
 
-                    # if it is first in row or has a black rectangle behind it, adds new horizontal word
-                    if (counter % len(tile_row) == 0) or (j != 0 and tile_row[j - 1]):
-                        helper = str(counter) + "h"
-                        if helper == "0h":
-                            words_count.append([[i, j], helper, 1, [["0v", 0, 0]]])
-                        else:
-                            words_count.append([[i, j], helper, 1, []])
+        for var in variables:
+            i = 0
+            helper = ""
+            while var[i].isdigit():
+                helper += var[i]
+                i += 1
+            num = int(helper)
+            helper = [[int(num / len(tiles[0])), num % len(tiles[0])], var, variables[var], []]
+            words_count.append(helper)
 
-                    # if it is first in column or has a black rectangle above it adds new vertical word
-                    if (i == 0) or (i != 0 and tiles[i - 1][j]):
-                        helper = str(counter) + "v"
-                        words_count.append([[i, j], helper, 1, []])
+            for temp in words_count:
+                if temp == helper:
+                    break
 
-                    # add to size of the adequate word
-                    for words in words_count:
+                if temp[1][1] == "h" and helper[1][len(helper[1]) - 1] == "v":
+                    if temp[0][0] in range(helper[0][0], helper[0][0] + helper[2]) and helper[0][0] in range(temp[0][0], temp[0][0] + temp[2]):
+                        temp[3].append([helper[1], helper[0][1] - temp[0][1], helper[0][0] - temp[0][0]])
 
-                        should_add = True
-                        # checking if a space is in the same row where the start of a word is
-                        if words[0][0] == i and words[1][1] == "h" and ([i, j] != words[0]):
-                            for k in range(words[0][1], j):
-                                if tile_row[k]:
-                                    should_add = False
-                                    break
+                if temp[1][1] == "v" and helper[1][len(helper[1]) - 1] == "h":
+                    if temp[0][1] in range(helper[0][1], helper[0][1] + helper[2]) and helper[0][1] in range(temp[0][1], temp[0][1] + temp[2]):
+                        temp[3].append([helper[1], helper[0][0] - temp[0][0], temp[0][1] - helper[0][1]])
 
-                            if should_add:
-                                words[3].append([helper, words[2], i - words[0][0]])
-                                words[2] += 1
-
-                        should_add = True
-                        # checking if a space is in the same column where the start of a word is
-                        if words[0][1] == j and words[1][1] == "v" and ([i, j] != words[0]):
-                            for k in range(words[0][0], i):
-                                if tiles[k][j]:
-                                    should_add = False
-                                    break
-
-                            if should_add:
-                                words[3].append([helper, words[2], j - words[0][1]])
-                                words[2] += 1
-
-                j += 1
-                counter += 1
-
-            i += 1
-
+        # pprint.pprint(words_count)
         return words_count
 
     def get_algorithm_steps(self, tiles, variables, words):
@@ -111,6 +83,10 @@ class Backtracking(Algorithm):
                             # if word length is good
                             if len(word) == words_count[i][2]:
 
+                                if word in words_good and words_count[i][2] > 1:
+                                    k += 1
+                                    continue
+
                                 flag = True
                                 for j in range(0, i):
                                     for connection in words_connected[j]:
@@ -125,7 +101,7 @@ class Backtracking(Algorithm):
                                                         flag = True
 
                                 if flag:
-                                    words_good.append([words_count[i][1], word])
+                                    words_good.append(word)
                                     words_taken[i][1] = True
                                     words_taken[i][0] = word
                                     solution.append([words_count[i][1], k, domains])
@@ -166,7 +142,7 @@ class Backtracking(Algorithm):
                                                     flag = True
 
                                 if flag:
-                                    words_good.append([words_count[j][1], word])
+                                    words_good.append(word)
                                     words_taken[j][1] = True
                                     words_taken[j][0] = word
                                     solution.append([words_count[j][1], k+1, domains])
