@@ -148,20 +148,15 @@ class ForwardChecking(Algorithm):
     def get_algorithm_steps(self, tiles, variables, words):
 
         domains = {var: [word for word in words if len(word) == variables[var]] for var in variables}
-        # we will use this to change during the algorithm
-        domains_temp = domains
-        # return value
         solution = []
         # all words
         words_count = Algorithm.get_words_count(self, tiles, variables, words)
         # words that already have value
         words_taken = [["", False] for word in words_count]
-        # what words are dependent or connected
-        words_connected = [word[3] for word in words_count]
         # what words were used
         words_used = []
-        # what words are good
-        words_good = []
+        # what words are bad
+        words_bad = []
         # if backtracing is on
         backtracking = False
 
@@ -169,46 +164,79 @@ class ForwardChecking(Algorithm):
         while i < len(words_taken):
 
             if not backtracking:
-
                 if not words_taken[i][1]:
                     j = 0
-                    for domain in domains_temp[words_count[i][1]]:
+                    for domain in domains[words_count[i][1]]:
 
-                        # forward checking
                         flag = True
-                        for connection in words_connected[i]:
+                        for k in range(0, i):
+                            for connection in words_count[k][3]:
+                                if connection[0] == words_count[i][1]:
+                                    if words_taken[k][0][connection[1]] != domain[connection[2]]:
+                                        flag = False
+                                        break
 
-                            temps = []
-                            for domain_check in domains_temp[connection[0]]:
-
-                                # check if words can't be used
-                                if domain_check[connection[2]] != domain[connection[1]]:
-                                    temps.append(domain_check)
-
-                            if temps == domains_temp[connection[0]]:
-                                flag = False
-                                break
+                        # here we check forward check
 
                         if flag:
-                            words_good.append(domain)
+                            solution.append([words_count[i][1], j, domains])
                             words_taken[i][1] = True
                             words_taken[i][0] = domain
-                            solution.append([words_count[i][1], j, domains])
                             backtracking = False
                             break
 
                         j += 1
 
                     if not words_taken[i][1]:
+                        solution.append([words_count[i][1], None, domains])
+                        words_used.append([[], []])
                         backtracking = True
                     else:
                         i += 1
             else:
-                pass
+                # what situation happened so it doesn't happened again
+                for j in range(i - 1, -1, -1):
 
-        pprint.pprint(solution)
+                    if not backtracking:
+                        continue
+
+                    k = 0
+                    for domain in domains[words_count[j][1]]:
+
+                        if domain == words_taken[j][0] or [domain, words_count[j][1]] in words_bad:
+                            k += 1
+                            continue
+
+                        flag = True
+                        for l in range(0, j):
+                            for connection in words_count[l][3]:
+                                if connection[0] == words_count[j][1]:
+                                    if words_taken[l][0][connection[1]] != domain[connection[2]]:
+                                        flag = False
+                                        break
+
+                        if flag and [domain, words_count[j][1]] not in words_used:
+                            words_used[len(words_used) - 1][0] = words_taken[j][0]
+                            words_used[len(words_used) - 1][1] = words_count[j][1]
+                            words_bad.append([words_taken[j][0], words_count[j][1]])
+                            solution.append([words_count[j][1], k, domains])
+                            words_taken[j][0] = domain
+                            words_bad.append([words_taken[j][0], words_count[j][1]])
+                            words_used.append([words_taken[j][0], words_count[j][1]])
+                            i = j + 1
+                            backtracking = False
+                            break
+
+                        k += 1
+
+                    if not flag:
+                        solution.append([words_count[j][1], None, domains])
+                        words_taken[j][1] = False
+                        words_taken[j][0] = ""
+
+                backtracking = False
+
         return solution
-
 
 class ArcConsistency(Algorithm):
 
