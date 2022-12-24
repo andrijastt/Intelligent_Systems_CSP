@@ -28,7 +28,6 @@ class Algorithm:
                     if temp[0][1] in range(helper[0][1], helper[0][1] + helper[2]) and helper[0][1] in range(temp[0][1], temp[0][1] + temp[2]):
                         temp[3].append([helper[1], helper[0][0] - temp[0][0], temp[0][1] - helper[0][1]])
 
-        # pprint.pprint(words_count)
         return words_count
 
     def get_algorithm_steps(self, tiles, variables, words):
@@ -52,6 +51,7 @@ class Backtracking(Algorithm):
 
     def get_algorithm_steps(self, tiles, variables, words):
 
+        # domains = {var: [word for word in words if len(word) == variables[var]] for var in variables}
         domains = {var: [word for word in words] for var in variables}
 
         solution = []
@@ -68,102 +68,95 @@ class Backtracking(Algorithm):
         # if backtracing is on
         backtracking = False
 
-        while(True):
+        i = 0
+        while i < len(words_taken):
 
-            i = 0
-            while i < len(words_taken):
+            # if we dont backtrack
+            if not backtracking:
+                # it doesn't have a word
+                if not words_taken[i][1]:
+                    # cycle through all words
+                    k = 0
+                    for word in words:
+                        # if word length is good
+                        if len(word) == words_count[i][2]:
 
-                # if we dont backtrack
-                if not backtracking:
-                    # it doesn't have a word
-                    if not words_taken[i][1]:
-                        # cycle through all words
-                        k = 0
-                        for word in words:
-                            # if word length is good
-                            if len(word) == words_count[i][2]:
+                            if word in words_good and words_count[i][2] > 1:
+                                k += 1
+                                continue
 
-                                if word in words_good and words_count[i][2] > 1:
-                                    k += 1
-                                    continue
+                            flag = True
+                            for j in range(0, i):
+                                for connection in words_connected[j]:
 
-                                flag = True
-                                for j in range(0, i):
-                                    for connection in words_connected[j]:
-
-                                        if connection[0] == words_count[i][1] \
-                                                and [words_count[i][1], word] not in words_used:
-                                                # check if words are good
-                                                if words_taken[j][0][connection[1]] != word[connection[2]]:
-                                                    flag = False
-                                                else:
-                                                    if not flag:
-                                                        flag = True
-
-                                if flag:
-                                    words_good.append(word)
-                                    words_taken[i][1] = True
-                                    words_taken[i][0] = word
-                                    solution.append([words_count[i][1], k, domains])
-                                    i += 1
-                                    backtracking = False
-                                    break
-                                else:
-                                    backtracking = True
-
-                            k += 1
-
-                    if backtracking:
-                        solution.append([words_count[i][1], None, domains])
-                else:
-                    # we are going backwards and are searching for new words
-                    for j in range(i - 1, -1, -1):
-                        words_used.append([words_count[j][1], words_taken[j][0]])
-
-                        k = 0
-                        for word in words:
-                            # if word length is good
-                            if len(word) == words_count[j][2]:
-
-                                if [words_count[j][1], word] in words_used:
-                                    continue
-
-                                flag = True
-                                for l in range(0, j):
-                                    for connection in words_connected[l]:
-
-                                        if connection[0] == words_count[j][1] \
-                                                and [words_count[j][1], word] not in words_used:
+                                    if connection[0] == words_count[i][1] \
+                                            and [words_count[i][1], word] not in words_used:
                                             # check if words are good
-                                            if words_taken[l][0][connection[1]] != word[connection[2]]:
+                                            if words_taken[j][0][connection[1]] != word[connection[2]]:
                                                 flag = False
                                             else:
                                                 if not flag:
                                                     flag = True
 
-                                if flag:
-                                    words_good.append(word)
-                                    words_taken[j][1] = True
-                                    words_taken[j][0] = word
-                                    solution.append([words_count[j][1], k+1, domains])
-                                    backtracking = False
-                                    words_used = []
-                                    i = j + 1
-                                    break
-                                else:
-                                    words_taken[j][1] = False
-                                    words_taken[j][0] = ""
-                            k += 1
+                            if flag:
+                                words_good.append(word)
+                                words_taken[i][1] = True
+                                words_taken[i][0] = word
+                                solution.append([words_count[i][1], k, domains])
+                                i += 1
+                                backtracking = False
+                                break
+                            else:
+                                backtracking = True
 
-                        if backtracking:
-                            solution.append([words_count[j][1], None, domains])
-                        else:
-                            break
+                        k += 1
 
+                if backtracking:
+                    solution.append([words_count[i][1], None, domains])
+            else:
+                # we are going backwards and are searching for new words
+                for j in range(i - 1, -1, -1):
+                    words_used.append([words_count[j][1], words_taken[j][0]])
 
-            # last element has taken its word, break cycle
-            if words_taken[len(words_taken) - 1]:
-                break
+                    k = 0
+                    for word in words:
+                        # if word length is good
+                        if len(word) == words_count[j][2]:
+
+                            if [words_count[j][1], word] in words_used:
+                                continue
+
+                            flag = True
+                            for l in range(0, j):
+                                for connection in words_connected[l]:
+
+                                    if connection[0] == words_count[j][1] \
+                                            and [words_count[j][1], word] not in words_used:
+                                        # check if words are good
+                                        if words_taken[l][0][connection[1]] != word[connection[2]]:
+                                            flag = False
+                                        else:
+                                            if not flag:
+                                                flag = True
+
+                            if flag:
+                                words_good.append(word)
+                                words_taken[j][1] = True
+                                words_taken[j][0] = word
+                                solution.append([words_count[j][1], k+1, domains])
+                                backtracking = False
+                                words_used = [words_count[j][1], word]
+                                i = j + 1
+                                break
+                            else:
+                                words_taken[j][1] = False
+                                words_taken[j][0] = ""
+                        k += 1
+
+                    if backtracking:
+                        solution.append([words_count[j][1], None, domains])
+                    else:
+                        break
 
         return solution
 
