@@ -161,8 +161,7 @@ class ForwardChecking(Algorithm):
         backtracking = False
 
         i = 0
-        while i < len(words_taken):
-
+        while i < len(words_count):
             if not backtracking:
                 if not words_taken[i][1]:
                     j = 0
@@ -177,6 +176,16 @@ class ForwardChecking(Algorithm):
                                         break
 
                         # here we check forward check
+                        for connection in words_count[i][3]:
+                            if not flag:
+                                continue
+                            temps = []
+                            for possible_words in domains[connection[0]]:
+                                if domain[connection[1]] != possible_words[connection[2]]:
+                                    temps.append(possible_words)
+
+                            if temps == domains[connection[0]]:
+                                flag = False
 
                         if flag:
                             solution.append([words_count[i][1], j, domains])
@@ -215,6 +224,16 @@ class ForwardChecking(Algorithm):
                                         flag = False
                                         break
 
+                        for connection in words_count[i][3]:
+                            if not flag:
+                                continue
+                            temps = []
+                            for possible_words in domains[connection[0]]:
+                                if domain[connection[1]] != possible_words[connection[2]]:
+                                    temps.append(possible_words)
+                            if temps == domains[connection[0]]:
+                                flag = False
+
                         if flag and [domain, words_count[j][1]] not in words_used:
                             words_used[len(words_used) - 1][0] = words_taken[j][0]
                             words_used[len(words_used) - 1][1] = words_count[j][1]
@@ -238,6 +257,6 @@ class ForwardChecking(Algorithm):
 
         return solution
 
-class ArcConsistency(Algorithm):
 
+class ArcConsistency(Algorithm):
     pass
