@@ -259,4 +259,155 @@ class ForwardChecking(Algorithm):
 
 
 class ArcConsistency(Algorithm):
-    pass
+
+    def get_algorithm_steps(self, tiles, variables, words):
+
+        domains = {var: [word for word in words if len(word) == variables[var]] for var in variables}
+        arc_bad_words = {var: [] for var in variables}
+        solution = []
+        # all words
+        words_count = Algorithm.get_words_count(self, tiles, variables, words)
+        # words that already have value
+        words_taken = [["", False] for word in words_count]
+        # what words were used
+        words_used = []
+        # what words are bad
+        words_bad = []
+        # if backtracing is on
+        backtracking = False
+
+        i = 0
+        while i < len(words_count):
+            if not backtracking:
+                if not words_taken[i][1]:
+                    j = 0
+                    for domain in domains[words_count[i][1]]:
+
+                        if domain in arc_bad_words[words_count[i][1]]:
+                            j += 1
+                            continue
+
+                        flag = True
+                        for k in range(0, i):
+                            for connection in words_count[k][3]:
+                                if connection[0] == words_count[i][1]:
+                                    if words_taken[k][0][connection[1]] != domain[connection[2]]:
+                                        flag = False
+                                        break
+
+                        # here we check forward check
+                        for connection in words_count[i][3]:
+                            if not flag:
+                                continue
+                            temps = []
+                            for possible_words in domains[connection[0]]:
+                                if domain[connection[1]] != possible_words[connection[2]]:
+                                    temps.append(possible_words)
+
+                            if temps == domains[connection[0]]:
+                                flag = False
+
+                        # here we arc check
+                        if flag:
+                            for connection in words_count[i][3]:
+
+                                item = [x for x in words_count if x[1] == connection[0]]
+                                for possible_words in domains[connection[0]]:
+
+                                    for inner_connection in item[0][3]:
+                                        temps = []
+                                        for inner_possible_words in domains[inner_connection[0]]:
+                                            if possible_words[inner_connection[1]] != inner_possible_words[inner_connection[2]]:
+                                                temps.append(inner_possible_words)
+
+                                        if temps == domains[inner_connection[0]]:
+                                            arc_bad_words[item[0][1]].append(possible_words)
+
+                        if flag:
+                            solution.append([words_count[i][1], j, domains])
+                            words_taken[i][1] = True
+                            words_taken[i][0] = domain
+                            backtracking = False
+                            break
+
+                        j += 1
+
+                    if not words_taken[i][1]:
+                        solution.append([words_count[i][1], None, domains])
+                        words_used.append([[], []])
+                        backtracking = True
+                    else:
+                        i += 1
+            else:
+                # what situation happened so it doesn't happened again
+                arc_bad_words = {var: [] for var in variables}
+                for j in range(i - 1, -1, -1):
+
+                    if not backtracking:
+                        continue
+
+                    k = 0
+                    for domain in domains[words_count[j][1]]:
+
+                        if domain == words_taken[j][0] or [domain, words_count[j][1]] in words_bad or \
+                                domain in arc_bad_words[words_count[i][1]]:
+                            k += 1
+                            continue
+
+                        flag = True
+                        for l in range(0, j):
+                            for connection in words_count[l][3]:
+                                if connection[0] == words_count[j][1]:
+                                    if words_taken[l][0][connection[1]] != domain[connection[2]]:
+                                        flag = False
+                                        break
+
+                        # forward checking
+                        for connection in words_count[i][3]:
+                            if not flag:
+                                continue
+                            temps = []
+                            for possible_words in domains[connection[0]]:
+                                if domain[connection[1]] != possible_words[connection[2]]:
+                                    temps.append(possible_words)
+                            if temps == domains[connection[0]]:
+                                flag = False
+
+                        # here we arc check
+                        if flag:
+                            for connection in words_count[i][3]:
+
+                                item = [x for x in words_count if x[1] == connection[0]]
+                                for possible_words in domains[connection[0]]:
+
+                                    for inner_connection in item[0][3]:
+                                        temps = []
+                                        for inner_possible_words in domains[inner_connection[0]]:
+                                            if possible_words[inner_connection[1]] != inner_possible_words[inner_connection[2]]:
+                                                temps.append(inner_possible_words)
+
+                                        if temps == domains[inner_connection[0]]:
+                                            arc_bad_words[item[0][1]].append(possible_words)
+
+                        if flag and [domain, words_count[j][1]] not in words_used:
+                            words_used[len(words_used) - 1][0] = words_taken[j][0]
+                            words_used[len(words_used) - 1][1] = words_count[j][1]
+                            words_bad.append([words_taken[j][0], words_count[j][1]])
+                            solution.append([words_count[j][1], k, domains])
+                            words_taken[j][0] = domain
+                            words_bad.append([words_taken[j][0], words_count[j][1]])
+                            words_used.append([words_taken[j][0], words_count[j][1]])
+                            i = j + 1
+                            backtracking = False
+                            break
+
+                        k += 1
+
+                    if not flag:
+                        solution.append([words_count[j][1], None, domains])
+                        words_taken[j][1] = False
+                        words_taken[j][0] = ""
+
+                backtracking = False
+
+        return solution
