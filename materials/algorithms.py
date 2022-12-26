@@ -175,24 +175,41 @@ class ForwardChecking(Algorithm):
                                         flag = False
                                         break
 
-                        # here we check forward check
-                        for connection in words_count[i][3]:
-                            if not flag:
-                                continue
-                            temps = []
-                            for possible_words in domains[connection[0]]:
-                                if domain[connection[1]] != possible_words[connection[2]]:
-                                    temps.append(possible_words)
-
-                            if temps == domains[connection[0]]:
-                                flag = False
+                        # # here we check forward check
+                        # for connection in words_count[i][3]:
+                        #     if not flag:
+                        #         continue
+                        #     temps = []
+                        #     for possible_words in domains[connection[0]]:
+                        #         if domain[connection[1]] != possible_words[connection[2]]:
+                        #             temps.append(possible_words)
+                        #
+                        #     if temps == domains[connection[0]]:
+                        #         flag = False
 
                         if flag:
+
+                            # here we check forward check
+                            for connection in words_count[i][3]:
+                                if not flag:
+                                    continue
+                                temps = []
+                                for possible_words in domains[connection[0]]:
+                                    if domain[connection[1]] != possible_words[connection[2]]:
+                                        temps.append(possible_words)
+
+                                if temps == domains[connection[0]]:
+                                    flag = False
+
                             solution.append([words_count[i][1], j, domains])
-                            words_taken[i][1] = True
-                            words_taken[i][0] = domain
-                            backtracking = False
-                            break
+
+                            if flag:
+                                words_taken[i][1] = True
+                                words_taken[i][0] = domain
+                                backtracking = False
+                                break
+                            else:
+                                solution.append([words_count[i][1], None, domains])
 
                         j += 1
 
@@ -295,40 +312,72 @@ class ArcConsistency(Algorithm):
                                         flag = False
                                         break
 
-                        # here we check forward check
-                        for connection in words_count[i][3]:
-                            if not flag:
-                                continue
-                            temps = []
-                            for possible_words in domains[connection[0]]:
-                                if domain[connection[1]] != possible_words[connection[2]]:
-                                    temps.append(possible_words)
+                        # # here we check forward check
+                        # for connection in words_count[i][3]:
+                        #     if not flag:
+                        #         continue
+                        #     temps = []
+                        #     for possible_words in domains[connection[0]]:
+                        #         if domain[connection[1]] != possible_words[connection[2]]:
+                        #             temps.append(possible_words)
+                        #
+                        #     if temps == domains[connection[0]]:
+                        #         flag = False
 
-                            if temps == domains[connection[0]]:
-                                flag = False
+                        # # here we arc check
+                        # if flag:
+                        #     for connection in words_count[i][3]:
+                        #
+                        #         item = [x for x in words_count if x[1] == connection[0]]
+                        #         for possible_words in domains[connection[0]]:
+                        #
+                        #             for inner_connection in item[0][3]:
+                        #                 temps = []
+                        #                 for inner_possible_words in domains[inner_connection[0]]:
+                        #                     if possible_words[inner_connection[1]] != inner_possible_words[inner_connection[2]]:
+                        #                         temps.append(inner_possible_words)
+                        #
+                        #                 if temps == domains[inner_connection[0]]:
+                        #                     arc_bad_words[item[0][1]].append(possible_words)
 
-                        # here we arc check
                         if flag:
+                            # here we check forward check
                             for connection in words_count[i][3]:
-
-                                item = [x for x in words_count if x[1] == connection[0]]
+                                if not flag:
+                                    continue
+                                temps = []
                                 for possible_words in domains[connection[0]]:
+                                    if domain[connection[1]] != possible_words[connection[2]]:
+                                        temps.append(possible_words)
 
-                                    for inner_connection in item[0][3]:
-                                        temps = []
-                                        for inner_possible_words in domains[inner_connection[0]]:
-                                            if possible_words[inner_connection[1]] != inner_possible_words[inner_connection[2]]:
-                                                temps.append(inner_possible_words)
+                                if temps == domains[connection[0]]:
+                                    flag = False
 
-                                        if temps == domains[inner_connection[0]]:
-                                            arc_bad_words[item[0][1]].append(possible_words)
+                            # here we arc check
+                            if flag:
+                                for connection in words_count[i][3]:
 
-                        if flag:
+                                    item = [x for x in words_count if x[1] == connection[0]]
+                                    for possible_words in domains[connection[0]]:
+
+                                        for inner_connection in item[0][3]:
+                                            temps = []
+                                            for inner_possible_words in domains[inner_connection[0]]:
+                                                if possible_words[inner_connection[1]] != inner_possible_words[inner_connection[2]]:
+                                                    temps.append(inner_possible_words)
+
+                                            if temps == domains[inner_connection[0]]:
+                                                arc_bad_words[item[0][1]].append(possible_words)
+
                             solution.append([words_count[i][1], j, domains])
-                            words_taken[i][1] = True
-                            words_taken[i][0] = domain
-                            backtracking = False
-                            break
+
+                            if flag:
+                                words_taken[i][1] = True
+                                words_taken[i][0] = domain
+                                backtracking = False
+                                break
+                            else:
+                                solution.append([words_count[i][1], None, domains])
 
                         j += 1
 
